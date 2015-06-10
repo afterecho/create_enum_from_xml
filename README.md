@@ -26,6 +26,9 @@ in some other way.  The `attrenum` is chosen by me.  You can choose anything you
 use something that is already in use.  (Have a look in the generated/source directory after you've
 done a build to see what is already in use.)
 
+`attrsfile` is where the XML with the declared styleable enums are.  As you can see I've hardcoded
+a large chunk of the path as I don't know any other way to get it.
+
 ```
 def attrEnumTask = tasks.create("attrenum${variant.name}") << {
 ```
