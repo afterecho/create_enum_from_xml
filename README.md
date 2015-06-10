@@ -63,7 +63,7 @@ com.squareup.javapoet.TypeSpec attrEnum = attrEnumBuilder.build();
 
 com.squareup.javapoet.JavaFile javaFile = com.squareup.javapoet.JavaFile.builder("com.afterecho.android.util", attrEnum).build();
 ```
-This uses Square's JavaPoet to create an enum.  Each enum is named after the attribute `name` in the
+This uses Square's [JavaPoet](https://github.com/square/javapoet) to create an enum.  Each enum is named after the attribute `name` in the
 XML so make sure you use valid Java identifiers.  I've also given the enum a parameter which is the
 `value` attribute in case you don't use consecutive values.  JavaPoet is very powerful so you can
 do so much more than this if you wish.  Or replace it all with a load of printlns if you want.
@@ -108,3 +108,8 @@ You'll notice when you open it that there's the warning "Files under the build f
 and should not be edited."  That shows it's in the right place.
 
 Use as you see fit!
+
+No licence.  Public Domain.  No rights reserved.  E&OE.  Contents may settle in transit.
+Not responsible for any damage the code does.  For novelty purposes only.  Not to be taken
+internally.
+
