@@ -17,8 +17,8 @@ This runs against all variants of build that are configured.  For more informati
 see https://developer.android.com/tools/building/configuring-gradle.html
 
 ```
-    File outdir = new File("${project.buildDir}/generated/source/attrenum/${variant.dirName}")
-    File attrsfile = new File("${project.projectDir}/src/main/res/values/attrs.xml")
+File outdir = new File("${project.buildDir}/generated/source/attrenum/${variant.dirName}")
+File attrsfile = new File("${project.projectDir}/src/main/res/values/attrs.xml")
 ```
 Two File objects are defined.  `outdir` is the base directory where the generated Java file will be
 placed.  I have hardcoded some of the path (`generated/source`) as I don't know if it is available
@@ -27,18 +27,18 @@ use something that is already in use.  (Have a look in the generated/source dire
 done a build to see what is already in use.)
 
 ```
-    def attrEnumTask = tasks.create("attrenum${variant.name}") << {
+def attrEnumTask = tasks.create("attrenum${variant.name}") << {
 ```
 This creates a new task.  The `${variant.name}` makes the task name unique per build variant
 otherwise you'll get complaints.
 
 ```
-        def attrs = new XmlParser().parse(attrsfile)
-        def styleable = attrs.depthFirst().find {
-            it.name() == "declare-styleable" && it.@name == "MyEnumStyle"
-        }
-        def enumlist = styleable.depthFirst().find { it.name() == "attr" && it.@name == "fubar" }
-        def vals = enumlist.depthFirst().findAll { it.name() == "enum" }
+def attrs = new XmlParser().parse(attrsfile)
+def styleable = attrs.depthFirst().find {
+    it.name() == "declare-styleable" && it.@name == "MyEnumStyle"
+}
+def enumlist = styleable.depthFirst().find { it.name() == "attr" && it.@name == "fubar" }
+def vals = enumlist.depthFirst().findAll { it.name() == "enum" }
 ```
 Ok, not very pretty, but it parses the attrs.xml file, finds the `declare-styleable` block that
 has a name of MyEnumStyle and then finds the attr element that has a name of fubar and then gets
@@ -46,22 +46,22 @@ all the enums within.  I have no doubt that there are cleaner, prettier ways, bu
 all the work for you.  :)
 
 ```
-        com.squareup.javapoet.TypeSpec.Builder attrEnumBuilder = com.squareup.javapoet.TypeSpec.enumBuilder("AttrEnum")
-                .addModifiers(javax.lang.model.element.Modifier.PUBLIC)
-        vals.each {
-            attrEnumBuilder.addEnumConstant(it.@name, com.squareup.javapoet.TypeSpec.anonymousClassBuilder('$L', it.@value as int).build())
-        }
+com.squareup.javapoet.TypeSpec.Builder attrEnumBuilder = com.squareup.javapoet.TypeSpec.enumBuilder("AttrEnum")
+        .addModifiers(javax.lang.model.element.Modifier.PUBLIC)
+vals.each {
+    attrEnumBuilder.addEnumConstant(it.@name, com.squareup.javapoet.TypeSpec.anonymousClassBuilder('$L', it.@value as int).build())
+}
 
-        attrEnumBuilder
-                .addField(com.squareup.javapoet.TypeName.INT, "index", javax.lang.model.element.Modifier.PUBLIC, javax.lang.model.element.Modifier.FINAL)
-                .addMethod(com.squareup.javapoet.MethodSpec.constructorBuilder()
-                .addParameter(com.squareup.javapoet.TypeName.INT, "index")
-                .addStatement('this.$N = $N', "index", "index")
-                .build())
+attrEnumBuilder
+        .addField(com.squareup.javapoet.TypeName.INT, "index", javax.lang.model.element.Modifier.PUBLIC, javax.lang.model.element.Modifier.FINAL)
+        .addMethod(com.squareup.javapoet.MethodSpec.constructorBuilder()
+        .addParameter(com.squareup.javapoet.TypeName.INT, "index")
+        .addStatement('this.$N = $N', "index", "index")
+        .build())
 
-        com.squareup.javapoet.TypeSpec attrEnum = attrEnumBuilder.build();
+com.squareup.javapoet.TypeSpec attrEnum = attrEnumBuilder.build();
 
-        com.squareup.javapoet.JavaFile javaFile = com.squareup.javapoet.JavaFile.builder("com.afterecho.android.util", attrEnum).build();
+com.squareup.javapoet.JavaFile javaFile = com.squareup.javapoet.JavaFile.builder("com.afterecho.android.util", attrEnum).build();
 ```
 This uses Square's JavaPoet to create an enum.  Each enum is named after the attribute `name` in the
 XML so make sure you use valid Java identifiers.  I've also given the enum a parameter which is the
@@ -71,15 +71,13 @@ do so much more than this if you wish.  Or replace it all with a load of println
 The string parameter in the builder() call is the package name for your class.
 
 ```
-        javaFile.writeTo(outdir)
-    }
+javaFile.writeTo(outdir)
 ```
 This writes the Java source file.  Luckily it also creates the package directory structure too.
 
 ```
-    attrEnumTask.description = 'Turns a stylable enum into a Java enum'
-    variant.registerJavaGeneratingTask attrEnumTask, outdir
-}
+attrEnumTask.description = 'Turns a stylable enum into a Java enum'
+variant.registerJavaGeneratingTask attrEnumTask, outdir
 ```
 These last two lines give the task a description and register it.
 
