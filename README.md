@@ -82,7 +82,7 @@ variant.registerJavaGeneratingTask attrEnumTask, outdir
 These last two lines give the task a description and register it.
 
 Once you have all this, a rebuild of your project and Hay Presto!  There's a new Java file that
-looks something like this (but with extra line spacing):
+looks something like this:
 
 ```
 package com.afterecho.android.util;
