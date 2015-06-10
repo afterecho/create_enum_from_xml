@@ -1,0 +1,60 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 22
+    buildToolsVersion "22.0.1"
+
+    defaultConfig {
+        applicationId "com.afterecho.android.demoapp"
+        minSdkVersion 15
+        targetSdkVersion 22
+        versionCode 1
+        versionName "1.0"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile 'com.android.support:appcompat-v7:22.2.0'
+}
+
+android.applicationVariants.all { variant ->
+
+    File outdir = new File("${project.buildDir}/generated/source/attrenum/${variant.dirName}")
+    File attrsfile = new File("${project.projectDir}/src/main/res/values/attrs.xml")
+
+    def attrEnumTask = tasks.create("attrenum${variant.name}") << {
+        def attrs = new XmlParser().parse(attrsfile)
+        def styleable = attrs.depthFirst().find {
+            it.name() == "declare-styleable" && it.@name == "MyEnumStyle"
+        }
+        def enumlist = styleable.depthFirst().find { it.name() == "attr" && it.@name == "fubar" }
+        def vals = enumlist.depthFirst().findAll { it.name() == "enum" }
+
+        com.squareup.javapoet.TypeSpec.Builder attrEnumBuilder = com.squareup.javapoet.TypeSpec.enumBuilder("AttrEnum")
+                .addModifiers(javax.lang.model.element.Modifier.PUBLIC)
+        vals.each {
+            attrEnumBuilder.addEnumConstant(it.@name, com.squareup.javapoet.TypeSpec.anonymousClassBuilder('$L', it.@value as int).build())
+        }
+
+        attrEnumBuilder
+                .addField(com.squareup.javapoet.TypeName.INT, "index", javax.lang.model.element.Modifier.PUBLIC, javax.lang.model.element.Modifier.FINAL)
+                .addMethod(com.squareup.javapoet.MethodSpec.constructorBuilder()
+                .addParameter(com.squareup.javapoet.TypeName.INT, "index")
+                .addStatement('this.$N = $N', "index", "index")
+                .build())
+
+        com.squareup.javapoet.TypeSpec attrEnum = attrEnumBuilder.build();
+
+        com.squareup.javapoet.JavaFile javaFile = com.squareup.javapoet.JavaFile.builder("com.afterecho.android.util", attrEnum).build();
+        javaFile.writeTo(outdir)
+    }
+    attrEnumTask.description = 'Turns a stylable enum into a Java enum'
+    variant.registerJavaGeneratingTask attrEnumTask, outdir
+}

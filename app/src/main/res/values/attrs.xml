@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="MyEnumStyle">
+        <attr name="fubar">
+            <enum name="FirstEnum" value="0"/>
+            <enum name="SecondEnum" value="1"/>
+            <enum name="ThirdEnum" value="2"/>
+            <enum name="FourthEnum" value="3"/>
+        </attr>
+    </declare-styleable>
+</resources>
